@@ -15,14 +15,13 @@ class Color:
 class NodeType:
     SPACE = -1
     KEY = 0
-    KEYNEG = 1
-    KEYABS = 2
-    KEYFLIP = 3
-    DOOR = 4
-    DOORNEG = 5
-    DOORBLANK = 6
-    DOORX = 7
-    DOORNEGX = 8
+    KEYABS = 1
+    KEYFLIP = 2
+    DOOR = 3
+    DOORNEG = 4
+    DOORBLANK = 5
+    DOORX = 6
+    DOORNEGX = 7
 class Effect:
     NONE = -1
     FROZEN = 0

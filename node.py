@@ -10,9 +10,9 @@ class Node:
     id: str
 
     # Code format: "TTn.CE" (TT = node type, n = amount (optional), C = color, E = effect (optional))
-    # To represent a stack of 6 red exact keys, the code would be "K=6.R"
+    # To represent a red key, the code would be "K.R"
     # To represent a frozen pink blast door, the code would be "DX.pF"
-    # To represent -1 pure keys, the code would be "K-.X"
+    # To represent -6 pure exact keys, the code would be "K=-1.X"
     def __init__(self, code: str) -> None:
         self.neighbors = []
         self.isCursed = False
@@ -24,35 +24,37 @@ class Node:
             self.effect = Effect.NONE
             return
 
-        codeArgs = code.split(".")
-        XnodeType = codeArgs[0][:2]
-        Xamount = codeArgs[0][2:]
-        Xcolor = codeArgs[1][0]
-        Xeffect = codeArgs[1][1:]
-        self.nodeType = {
-            "K+": NodeType.KEY,
-            "K-": NodeType.KEYNEG,
-            "K=": NodeType.KEYABS,
-            "K!": NodeType.KEYFLIP,
-            "D+": NodeType.DOOR,
-            "D-": NodeType.DOORNEG,
-            "D0": NodeType.DOORBLANK,
-            "DX": NodeType.DOORX,
-            "Dx": NodeType.DOORNEGX,
-        }[XnodeType]
-        if XnodeType not in ["K!", "D0", "DX", "Dx"]:
-            if Xamount:
-                self.amount = int(Xamount)
-            else:
-                self.amount = 1
-        else:
+        left, right = code.split(".")
+        if left[:2] == "K=":
+            self.nodeType = NodeType.KEYABS
+            self.amount = int(left[2:]) if len(left) > 2 else 1
+        elif left[:2] == "K!":
+            self.nodeType = NodeType.KEYFLIP
             self.amount = None
+        elif left[0] == "K":
+            self.nodeType = NodeType.KEY
+            self.amount = int(left[1:]) if len(left) > 1 else 1
+        elif left[:3] == "D-X":
+            self.nodeType = NodeType.DOORNEGX
+            self.amount = None
+        elif left[:2] == "D-":
+            self.nodeType = NodeType.DOORNEG
+            self.amount = int(left[1:])
+        elif left[:2] == "D0":
+            self.nodeType = NodeType.DOORBLANK
+            self.amount = None
+        elif left[:2] == "DX":
+            self.nodeType = NodeType.DOORX
+            self.amount = None
+        elif left[0] == "D":
+            self.nodeType = NodeType.DOOR
+            self.amount = int(left[1:]) if len(left) > 1 else 1
         self.color = {
-            "W": Color.WHITE,
-            "O": Color.ORANGE,
-            "P": Color.PURPLE,
+            "w": Color.WHITE,
+            "o": Color.ORANGE,
+            "l": Color.PURPLE,
             "p": Color.PINK,
-            "C": Color.CYAN,
+            "c": Color.CYAN,
             "b": Color.BLACK,
             "R": Color.RED,
             "B": Color.BLUE,
@@ -60,13 +62,13 @@ class Node:
             "Y": Color.BROWN,
             "M": Color.GOLD,
             "X": Color.PURE
-        }[Xcolor]
+        }[right[0]]
         self.effect = {
             "": Effect.NONE,
             "F": Effect.FROZEN,
             "P": Effect.PAINTED,
             "E": Effect.ERODED
-        }[Xeffect]
+        }[right[1:]]
     
     def __str__(self) -> str:
         return f"Node({self.nodeType}, {self.amount}, {self.color}, {self.effect}, {self.isCursed})"

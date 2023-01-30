@@ -3,13 +3,13 @@ import level
 # Puzzle 1-2
 l = level.Level("start", "end")
 l.newChain("start", None,
-    "K+.W"
+    "K.w"
 )
 l.newChain("start", None,
-    "D+.W", "K+.O"
+    "D.w", "K.o"
 )
 l.newChain("start", "end",
-    "D+.W", "K+.W", "D+.O"
+    "D.w", "K.w", "D.o"
 )
 
 for id, node in l.gameObjects.items():
