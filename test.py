@@ -1,7 +1,7 @@
 import level
 
 # Puzzle 1-2
-l = level.Level()
+l = level.Level("start", "end")
 l.newChain("start", None,
     "K+.W"
 )

@@ -10,9 +10,15 @@ def makeNeighbors(*neighbors: Node) -> None:
 
 class Level:
     gameObjects: "dict[str, Node]"
+    startNode: str
+    endNode: str
 
-    def __init__(self) -> None:
+    def __init__(self, start: str, end: str) -> None:
         self.gameObjects = {}
+        self.startNode = start
+        self.endNode = end
+        self.addNode(Node(None), start)
+        self.addNode(Node(None), end)
     
     # Add a created node to the level
     def addNode(self, node: Node, id: str) -> None:
@@ -63,7 +69,7 @@ class Level:
     def clearSpace(self) -> None:
         x = []
         for id, node in self.gameObjects.items():
-            if node.nodeType == NodeType.SPACE and id not in ["start", "end"]:
+            if node.nodeType == NodeType.SPACE and id != self.startNode and id != self.endNode:
                 for neighbor in node.neighbors:
                     neighbor.neighbors.remove(node)
                 makeNeighbors(*node.neighbors)
