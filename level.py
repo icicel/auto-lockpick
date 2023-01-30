@@ -29,6 +29,13 @@ class Level:
     # Create a chain of nodes between two nodes, or from one node (one-ended) if no end node is given
     # Also creates start and end nodes if they don't already exist
     def newChain(self, startName: str, endName: str, *codes: str) -> None:
+        if not startName:
+            raise Exception("Must have a start node")
+        if not codes:
+            # A chain of 0 nodes
+            makeNeighbors(self.gameObjects[startName], self.gameObjects[endName])
+            return
+
         nodes = [Node(code) for code in codes]
 
         if startName not in self.gameObjects:
@@ -45,6 +52,7 @@ class Level:
         for i in range(len(nodes)-1):
             makeNeighbors(nodes[i], nodes[i+1])
         
+        # Add a bunch of apostrophes if ids conflict
         version = 0
         while id + "'" * version + "0" in self.gameObjects:
             version += 1
