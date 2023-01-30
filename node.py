@@ -33,13 +33,14 @@ class Node:
             "K+": NodeType.KEY,
             "K-": NodeType.KEYNEG,
             "K=": NodeType.KEYABS,
+            "K!": NodeType.KEYFLIP,
             "D+": NodeType.DOOR,
             "D-": NodeType.DOORNEG,
             "D0": NodeType.DOORBLANK,
             "DX": NodeType.DOORX,
             "Dx": NodeType.DOORNEGX,
         }[XnodeType]
-        if XnodeType not in ["D0", "DX", "Dx"]:
+        if XnodeType not in ["K!", "D0", "DX", "Dx"]:
             if Xamount:
                 self.amount = int(Xamount)
             else:

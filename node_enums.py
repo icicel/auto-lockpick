@@ -17,11 +17,12 @@ class NodeType:
     KEY = 0
     KEYNEG = 1
     KEYABS = 2
-    DOOR = 3
-    DOORNEG = 4
-    DOORBLANK = 5
-    DOORX = 6
-    DOORNEGX = 7
+    KEYFLIP = 3
+    DOOR = 4
+    DOORNEG = 5
+    DOORBLANK = 6
+    DOORX = 7
+    DOORNEGX = 8
 class Effect:
     NONE = -1
     FROZEN = 0
