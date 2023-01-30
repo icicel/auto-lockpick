@@ -1,4 +1,5 @@
 class Color:
+    NONE = -1
     WHITE = 0
     ORANGE = 1
     PURPLE = 2
@@ -22,6 +23,7 @@ class NodeType:
     DOORX = 6
     DOORNEGX = 7
 class Effect:
+    NONE = -1
     FROZEN = 0
     PAINTED = 1
     ERODED = 2
