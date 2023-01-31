@@ -9,10 +9,10 @@ class Node:
     isCursed: bool
     id: str
 
-    # Code format: "TTn.CE" (TT = node type, n = amount (optional), C = color, E = effect (optional))
+    # Code format: "TN.CE" (T = node type, N = amount (optional), C = color, E = effect (optional))
     # To represent a red key, the code would be "K.R"
     # To represent a frozen pink blast door, the code would be "DX.pF"
-    # To represent -6 pure exact keys, the code would be "K=-1.X"
+    # To represent -1 brown exact keys, the code would be "K=-1.Y"
     def __init__(self, code: str) -> None:
         self.neighbors = []
         self.isCursed = False
@@ -25,30 +25,39 @@ class Node:
             return
 
         left, right = code.split(".")
-        if left[:2] == "K=":
-            self.nodeType = NodeType.KEYABS
-            self.amount = int(left[2:]) if len(left) > 2 else 1
-        elif left[:2] == "K!":
-            self.nodeType = NodeType.KEYFLIP
-            self.amount = None
-        elif left[0] == "K":
-            self.nodeType = NodeType.KEY
-            self.amount = int(left[1:]) if len(left) > 1 else 1
-        elif left[:3] == "D-X":
-            self.nodeType = NodeType.DOORNEGX
-            self.amount = None
-        elif left[:2] == "D-":
-            self.nodeType = NodeType.DOORNEG
-            self.amount = int(left[1:])
-        elif left[:2] == "D0":
-            self.nodeType = NodeType.DOORBLANK
-            self.amount = None
-        elif left[:2] == "DX":
-            self.nodeType = NodeType.DOORX
-            self.amount = None
-        elif left[0] == "D":
-            self.nodeType = NodeType.DOOR
-            self.amount = int(left[1:]) if len(left) > 1 else 1
+        for i, c in enumerate(left):
+            if c.isdigit():
+                XnodeType = left[:i]
+                Xamount = left[i:]
+                break
+        else:
+            XnodeType = left
+            Xamount = ""
+        Xcolor = right[0]
+        Xeffect = right[1:]
+
+        self.nodeType = {
+            "K": NodeType.KEY,
+            "K-": NodeType.KEY,
+            "K=": NodeType.KEYABS,
+            "K!": NodeType.KEYFLIP,
+            "D": NodeType.DOOR,
+            "D-": NodeType.DOORNEG,
+            "DO": NodeType.DOORBLANK,
+            "DX": NodeType.DOORX,
+            "D-X": NodeType.DOORNEGX
+        }[XnodeType]
+        self.amount = {
+            "K": int(Xamount) if Xamount else 1,
+            "K-": int(Xamount),
+            "K=": int(Xamount) if Xamount else 1,
+            "K!": None,
+            "D": int(Xamount) if Xamount else 1,
+            "D-": int(Xamount),
+            "DO": None,
+            "DX": None,
+            "D-X": None
+        }[XnodeType]
         self.color = {
             "w": Color.WHITE,
             "o": Color.ORANGE,
@@ -62,13 +71,13 @@ class Node:
             "Y": Color.BROWN,
             "M": Color.GOLD,
             "X": Color.PURE
-        }[right[0]]
+        }[Xcolor]
         self.effect = {
             "": Effect.NONE,
             "F": Effect.FROZEN,
             "P": Effect.PAINTED,
             "E": Effect.ERODED
-        }[right[1:]]
+        }[Xeffect]
     
     def __str__(self) -> str:
         return f"Node({self.nodeType}, {self.amount}, {self.color}, {self.effect}, {self.isCursed})"
