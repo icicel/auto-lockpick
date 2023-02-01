@@ -18,7 +18,3 @@ class LevelState:
     def getNextStates(self) -> "list[LevelState]":
         # TODO
         return []
-    
-    def isSolved(self) -> bool:
-        # TODO
-        return False
