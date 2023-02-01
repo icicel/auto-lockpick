@@ -6,6 +6,7 @@ class Solver:
     solutions: "list[tuple[Action]]"
 
     def __init__(self, level: Level) -> None:
+        level.clearSpace()
         self.level = level
         self.solutions = []
     
