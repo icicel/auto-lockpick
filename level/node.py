@@ -47,11 +47,11 @@ class Node:
         }[XnodeType]
         self.amount = {
             "K": int(Xamount) if Xamount else 1,
-            "K-": int("-" + Xamount),
+            "K-": int("-" + Xamount) if Xamount else None,
             "K=": int(Xamount) if Xamount else 1,
             "K!": None,
             "D": int(Xamount) if Xamount else 1,
-            "D-": int("-" + Xamount),
+            "D-": int("-" + Xamount) if Xamount else None,
             "DO": None,
             "DX": None,
             "D-X": None

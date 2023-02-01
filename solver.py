@@ -10,7 +10,7 @@ class Solver:
         self.solutions = []
     
     def getSolutions(self) -> "list[tuple[Action]]":
-        startState = LevelState(self.level)
+        startState = LevelState.initialState(self.level)
         self.solve(startState)
         return self.solutions
         
