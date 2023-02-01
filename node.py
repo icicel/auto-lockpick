@@ -6,7 +6,6 @@ class Node:
     amount: int
     color: Color
     effect: Effect
-    isCursed: bool
     id: str
 
     # Code format: "TN.CE" (T = node type, N = amount (optional), C = color, E = effect (optional))
@@ -15,7 +14,6 @@ class Node:
     # To represent -1 brown exact keys, the code would be "K=-1.Y"
     def __init__(self, code: str) -> None:
         self.neighbors = []
-        self.isCursed = False
         self.id = None
         if not code:
             self.nodeType = NodeType.SPACE
@@ -80,7 +78,7 @@ class Node:
         }[Xeffect]
     
     def __str__(self) -> str:
-        return f"Node({self.nodeType}, {self.amount}, {self.color}, {self.effect}, {self.isCursed})"
+        return f"Node({self.nodeType}, {self.amount}, {self.color}, {self.effect})"
     
     def asCode(self) -> str:
         if self.nodeType == NodeType.SPACE:
