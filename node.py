@@ -49,11 +49,11 @@ class Node:
         }[XnodeType]
         self.amount = {
             "K": int(Xamount) if Xamount else 1,
-            "K-": int(Xamount),
+            "K-": int("-" + Xamount),
             "K=": int(Xamount) if Xamount else 1,
             "K!": None,
             "D": int(Xamount) if Xamount else 1,
-            "D-": int(Xamount),
+            "D-": int("-" + Xamount),
             "DO": None,
             "DX": None,
             "D-X": None
@@ -81,6 +81,38 @@ class Node:
     
     def __str__(self) -> str:
         return f"Node({self.nodeType}, {self.amount}, {self.color}, {self.effect}, {self.isCursed})"
+    
+    def asCode(self) -> str:
+        if self.nodeType == NodeType.SPACE:
+            return None
+        return {
+            NodeType.KEY: f"K{self.amount if self.amount != 1 else ''}",
+            NodeType.KEYABS: f"K={self.amount if self.amount != 1 else ''}",
+            NodeType.KEYFLIP: f"K!",
+            NodeType.DOOR: f"D{self.amount if self.amount != 1 else ''}",
+            NodeType.DOORNEG: f"D{self.amount}",
+            NodeType.DOORBLANK: f"DO",
+            NodeType.DOORX: f"DX",
+            NodeType.DOORNEGX: f"D-X"
+        }[self.nodeType] + "." + {
+            Color.WHITE: "w",
+            Color.ORANGE: "o",
+            Color.PURPLE: "l",
+            Color.PINK: "p",
+            Color.CYAN: "c",
+            Color.BLACK: "b",
+            Color.RED: "R",
+            Color.BLUE: "B",
+            Color.GREEN: "G",
+            Color.BROWN: "Y",
+            Color.GOLD: "M",
+            Color.PURE: "X"
+        }[self.color] + {
+            Effect.NONE: "",
+            Effect.FROZEN: "F",
+            Effect.PAINTED: "P",
+            Effect.ERODED: "E"
+        }[self.effect]
 
     def addNeighbor(self, node) -> None:
         if node not in self.neighbors:

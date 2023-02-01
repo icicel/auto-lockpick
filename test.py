@@ -16,4 +16,4 @@ for id, node in l.gameObjects.items():
     print(id, str(node), [n.id for n in node.neighbors])
 solutions = solver.Solver(l).getSolutions()
 for solution in solutions:
-    print([node.id for node in solution])
+    print([node.asCode() for node in solution])
