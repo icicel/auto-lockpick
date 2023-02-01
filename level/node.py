@@ -115,3 +115,9 @@ class Node:
     def addNeighbor(self, node) -> None:
         if node not in self.neighbors:
             self.neighbors.append(node)
+    
+    def isKey(self) -> bool:
+        return self.nodeType < NodeType.DOOR
+    
+    def isDoor(self) -> bool:
+        return self.nodeType >= NodeType.DOOR
