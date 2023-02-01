@@ -65,6 +65,10 @@ class Level:
         for i, node in enumerate(nodes):
             self.addNode(node, id + "'" * version + str(i))
     
+    # Add a single node as a neighbor of another node
+    def newNeighbor(self, neighborName: str, code: str) -> None:
+        self.newChain(neighborName, None, code)
+    
     # Tries to remove "space" nodes by connecting their neighbors with each other
     def clearSpace(self) -> None:
         x = []
