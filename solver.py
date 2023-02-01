@@ -1,15 +1,15 @@
-from level import Level, Node
-from level_state import LevelState
+from level import Level
+from level_state import LevelState, Action
 
 class Solver:
     level: Level
-    solutions: "list[tuple[Node]]"
+    solutions: "list[tuple[Action]]"
 
     def __init__(self, level: Level) -> None:
         self.level = level
         self.solutions = []
     
-    def getSolutions(self) -> "list[tuple[Node]]":
+    def getSolutions(self) -> "list[tuple[Action]]":
         startPool = self.level.gameObjects[self.level.startNode].neighbors
         startState = LevelState(startPool)
         self.solve(startState)
