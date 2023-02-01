@@ -10,8 +10,7 @@ class Solver:
         self.solutions = []
     
     def getSolutions(self) -> "list[tuple[Action]]":
-        startPool = self.level.gameObjects[self.level.startNode].neighbors
-        startState = LevelState(startPool)
+        startState = LevelState(self.level)
         self.solve(startState)
         return self.solutions
         
