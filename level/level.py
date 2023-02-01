@@ -1,4 +1,5 @@
-from level.node import *
+from level.node import Node
+from level.node_enums import NodeType
 
 # Adds some amount of nodes as each other's neighbors
 def makeNeighbors(*neighbors: Node) -> None:

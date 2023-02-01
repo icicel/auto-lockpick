@@ -1,5 +1,6 @@
 from level.level import Level
-from level_state import LevelState, Action
+from level_state import LevelState
+from action import Action
 
 class Solver:
     level: Level

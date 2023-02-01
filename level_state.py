@@ -1,5 +1,7 @@
-from level.level import *
-from action import *
+from level.level import Level
+from level.node import Node
+from level.node_enums import Color, NodeType, Effect
+from action import Action, ActionType
 
 # keys - amount of keys per color
 # pool - list of nodes "available" in this state
