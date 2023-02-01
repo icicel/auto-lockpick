@@ -1,4 +1,4 @@
-from node import Node
+from level.node import *
 
 class ActionType:
     OPEN: 0

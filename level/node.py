@@ -1,4 +1,4 @@
-from node_enums import NodeType, Color, Effect
+from level.node_enums import *
 
 class Node:
     neighbors: "list[Node]"

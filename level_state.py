@@ -1,5 +1,4 @@
-from level import Level
-from node import *
+from level.level import *
 from action import Action
 
 # keys - amount of keys per color
