@@ -12,8 +12,6 @@ l.newChain("start", "end",
     "D.w", "K.w", "D.o"
 )
 
-for id, node in l.gameObjects.items():
-    print(id, str(node), [n.id for n in node.neighbors])
-solutions = solver.Solver(l).getSolutions()
+solutions = solver.Solver(l).getSolutionsAsStr()
 for solution in solutions:
     print(solution)

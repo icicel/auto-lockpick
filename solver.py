@@ -13,7 +13,13 @@ class Solver:
         startState = LevelState.initialState(self.level)
         self.solve(startState)
         return self.solutions
-        
+
+    def getSolutionsAsStr(self) -> "list[str]":
+        solutionsStr = []
+        for solution in self.getSolutions():
+            solutionsStr.append(", ".join([str(action) for action in solution]))
+        return solutionsStr
+
     def solve(self, state: LevelState) -> None:
         for nextState in state.getNextStates():
             if nextState.isSolved():
