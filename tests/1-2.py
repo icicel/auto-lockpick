@@ -1,4 +1,4 @@
-import solver
+import lockpick.solver as solver
 
 # Puzzle 1-2
 l = solver.Level("start", "end")
