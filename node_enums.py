@@ -12,6 +12,7 @@ class Color:
     BROWN = 9
     GOLD = 10
     PURE = 11
+    NUM_COLORS = 12
 class NodeType:
     SPACE = -1
     KEY = 0
