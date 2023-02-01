@@ -16,10 +16,8 @@ class Solver:
         
     def solve(self, state: LevelState) -> None:
         for nextState in state.getNextStates():
-            for node in nextState.pool:
-                if node.id == self.level.endNode:
-                    self.solutions.append(nextState.actions)
-                    return
+            if nextState.isSolved():
+                self.solutions.append(nextState.actions)
             else:
                 self.solve(nextState)
         

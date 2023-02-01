@@ -43,3 +43,9 @@ class LevelState:
     def getNextStates(self) -> "list[LevelState]":
         # TODO
         return []
+    
+    def isSolved(self) -> bool:
+        for node in self.pool:
+            if node.id == self.level.endNode:
+                return True
+        return False
