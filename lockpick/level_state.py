@@ -74,6 +74,13 @@ class LevelState:
                 return True
         return False
     
+    def canClean(self, effect: Effect) -> bool:
+        return {
+            Effect.FROZEN: self.keys[Color.RED] > 0,
+            Effect.PAINTED: self.keys[Color.BLUE] >= 3,
+            Effect.ERODED: self.keys[Color.GREEN] >= 5
+        }[effect]
+    
     def getNextStates(self) -> "list[LevelState]":
 
         # Can nodes be cursed?
@@ -94,24 +101,11 @@ class LevelState:
                 yield newState
 
         # Can nodes be cleaned?
-        if self.keys[Color.RED] > 0:
-            for node in self.pool:
-                if node.effect == Effect.FROZEN and node.id not in self.cleanedNodes:
-                    newState = LevelState.incState(self, Action(node, ActionType.CLEAN))
-                    newState.cleanedNodes.append(node.id)
-                    yield newState
-        if self.keys[Color.BLUE] >= 3:
-            for node in self.pool:
-                if node.effect == Effect.PAINTED and node.id not in self.cleanedNodes:
-                    newState = LevelState.incState(self, Action(node, ActionType.CLEAN))
-                    newState.cleanedNodes.append(node.id)
-                    yield newState
-        if self.keys[Color.GREEN] >= 5:
-            for node in self.pool:
-                if node.effect == Effect.ERODED and node.id not in self.cleanedNodes:
-                    newState = LevelState.incState(self, Action(node, ActionType.CLEAN))
-                    newState.cleanedNodes.append(node.id)
-                    yield newState
+        for node in self.pool:
+            if node.effect != Effect.NONE and self.canClean(node.effect) and node.id not in self.cleanedNodes:
+                newState = LevelState.incState(self, Action(node, ActionType.CLEAN))
+                newState.cleanedNodes.append(node.id)
+                yield newState
         
         # Can nodes be master-opened?
         if self.keys[Color.GOLD] > 0:
