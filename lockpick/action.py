@@ -28,4 +28,4 @@ class Action:
                 ActionType.CURSE: "Curse",
                 ActionType.BLESS: "Bless"
             }[self.type]
-        return f"{typeStr} {self.node.id} {self.node.asCode()}"
+        return f"{typeStr} {self.node.id}"
