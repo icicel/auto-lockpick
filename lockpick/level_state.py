@@ -15,14 +15,17 @@ class LevelState:
     actions: "tuple[Action]"
     cursedNodes: "list[Node]"
     openedNodes: "list[str]"
+    cleanedNodes: "list[str]"
 
-    def __init__(self, level: Level, keys: "dict[Color, int]", pool: "list[Node]", actions: "tuple[Action]", cursedNodes: "list[Node]", openedNodes: "list[str]") -> None:
+    def __init__(self, level: Level, keys: "dict[Color, int]", pool: "list[Node]", actions: "tuple[Action]", 
+                cursedNodes: "list[Node]", openedNodes: "list[str]", cleanedNodes: "list[str]") -> None:
         self.level = level
         self.keys = keys
         self.pool = pool
         self.actions = actions
         self.cursedNodes = cursedNodes
         self.openedNodes = openedNodes
+        self.cleanedNodes = cleanedNodes
 
     # Returns the starting state for a given level
     @classmethod
@@ -32,6 +35,7 @@ class LevelState:
             {color: 0 for color in range(Color.NUM_COLORS)},
             level.gameObjects[level.startNode].neighbors,
             (),
+            [],
             [],
             []
         )
@@ -51,7 +55,8 @@ class LevelState:
                 newPool,
                 oldState.actions + (action,),
                 oldState.cursedNodes.copy(),
-                oldState.openedNodes + [action.node.id]
+                oldState.openedNodes + [action.node.id],
+                oldState.cleanedNodes.copy()
             )         
         return LevelState(
             oldState.level,
@@ -59,7 +64,8 @@ class LevelState:
             oldState.pool.copy(),
             oldState.actions + (action,),
             oldState.cursedNodes.copy(),
-            oldState.openedNodes.copy()
+            oldState.openedNodes.copy(),
+            oldState.cleanedNodes.copy()
         )
     
     def isSolved(self) -> bool:
@@ -91,18 +97,21 @@ class LevelState:
         # Can nodes be cleaned?
         if self.keys[Color.RED] > 0:
             for node in self.pool:
-                if node.effect == Effect.FROZEN and Action(node, ActionType.CLEAN) not in self.actions:
+                if node.effect == Effect.FROZEN and node.id not in self.cleanedNodes:
                     newState = LevelState.incState(self, Action(node, ActionType.CLEAN))
+                    newState.cleanedNodes.append(node.id)
                     nextStates.append(newState)
         if self.keys[Color.BLUE] >= 3:
             for node in self.pool:
-                if node.effect == Effect.PAINTED and Action(node, ActionType.CLEAN) not in self.actions:
+                if node.effect == Effect.PAINTED and node.id not in self.cleanedNodes:
                     newState = LevelState.incState(self, Action(node, ActionType.CLEAN))
+                    newState.cleanedNodes.append(node.id)
                     nextStates.append(newState)
         if self.keys[Color.GREEN] >= 5:
             for node in self.pool:
-                if node.effect == Effect.ERODED and Action(node, ActionType.CLEAN) not in self.actions:
+                if node.effect == Effect.ERODED and node.id not in self.cleanedNodes:
                     newState = LevelState.incState(self, Action(node, ActionType.CLEAN))
+                    newState.cleanedNodes.append(node.id)
                     nextStates.append(newState)
         
         # Can nodes be master-opened?
