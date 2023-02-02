@@ -21,6 +21,9 @@ class Level:
         self.addNode(Node(None), start)
         self.addNode(Node(None), end)
     
+    def __str__(self) -> str:
+        return "\n".join([f"{id}:  {str(node)}" for id, node in self.gameObjects.items()])
+    
     # Add a created node to the level
     def addNode(self, node: Node, id: str) -> None:
         if id in self.gameObjects:

@@ -78,7 +78,49 @@ class Node:
         }[Xeffect]
     
     def __str__(self) -> str:
-        return f"Node({self.nodeType}, {self.amount}, {self.color}, {self.effect})"
+        return f"{self.asInGame():30}    nb{[n.id for n in self.neighbors]}"
+
+    def asInGame(self) -> str:
+        if self.nodeType == NodeType.SPACE:
+            return "Space"
+        string = {
+            NodeType.KEY: "",
+            NodeType.KEYABS: "Exact ",
+            NodeType.KEYFLIP: "Signflip ",
+            NodeType.DOOR: "",
+            NodeType.DOORNEG: "",
+            NodeType.DOORBLANK: "Blank ",
+            NodeType.DOORX: "Blast ",
+            NodeType.DOORNEGX: "Blast "
+        }[self.nodeType] + {
+            Color.WHITE: "White",
+            Color.ORANGE: "Orange",
+            Color.PURPLE: "Purple",
+            Color.PINK: "Pink",
+            Color.CYAN: "Cyan",
+            Color.BLACK: "Black",
+            Color.RED: "Red",
+            Color.BLUE: "Blue",
+            Color.GREEN: "Green",
+            Color.BROWN: "Brown",
+            Color.GOLD: "Master",
+            Color.PURE: "Pure"
+        }[self.color] + " "
+        if self.isKey():
+            string += "Key"
+            if self.amount:
+                string += f", Amount: {self.amount}"
+        elif self.isDoor():
+            string += "Door"
+            if self.amount:
+                string += f", Cost: {self.amount}"
+        string += {
+            Effect.NONE: "",
+            Effect.FROZEN: " (Frozen!)",
+            Effect.PAINTED: " (Painted!)",
+            Effect.ERODED: " (Eroded!)"
+        }[self.effect]
+        return string
     
     def asCode(self) -> str:
         if self.nodeType == NodeType.SPACE:
