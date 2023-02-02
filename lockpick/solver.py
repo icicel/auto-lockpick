@@ -16,11 +16,11 @@ class Solver:
         self.solve(startState)
         return self.solutions
 
-    def getSolutionsAsStr(self) -> "list[str]":
+    def getSolutionsAsStr(self) -> "str":
         solutionsStr = []
         for solution in self.getSolutions():
-            solutionsStr.append(", ".join([str(action) for action in solution]))
-        return solutionsStr
+            solutionsStr.append(", ".join([str(action) for action in solution]) + ", END!")
+        return "\n".join(solutionsStr)
 
     def solve(self, state: LevelState) -> None:
         for nextState in state.getNextStates():

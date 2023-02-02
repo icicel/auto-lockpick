@@ -12,6 +12,4 @@ l.newChain("start", "end",
     "D.w", "K.w", "D.o"
 )
 
-solutions = solver.Solver(l).getSolutionsAsStr()
-for solution in solutions:
-    print(solution)
+print(solver.Solver(l).getSolutionsAsStr())
