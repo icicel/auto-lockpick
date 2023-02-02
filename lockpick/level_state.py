@@ -75,7 +75,6 @@ class LevelState:
         return False
     
     def getNextStates(self) -> "list[LevelState]":
-        nextStates: "list[LevelState]" = []
 
         # Can nodes be cursed?
         if self.keys[Color.BROWN] > 0:
@@ -85,14 +84,14 @@ class LevelState:
                     continue
                 newState = LevelState.incState(self, Action(node, ActionType.CURSE))
                 newState.cursedNodes.append(node)
-                nextStates.append(newState)
+                yield newState
         
         # Can nodes be blessed?
         if self.keys[Color.BROWN] < 0:
             for node in self.cursedNodes:
                 newState = LevelState.incState(self, Action(node, ActionType.BLESS))
                 newState.cursedNodes.remove(node)
-                nextStates.append(newState)
+                yield newState
 
         # Can nodes be cleaned?
         if self.keys[Color.RED] > 0:
@@ -100,19 +99,19 @@ class LevelState:
                 if node.effect == Effect.FROZEN and node.id not in self.cleanedNodes:
                     newState = LevelState.incState(self, Action(node, ActionType.CLEAN))
                     newState.cleanedNodes.append(node.id)
-                    nextStates.append(newState)
+                    yield newState
         if self.keys[Color.BLUE] >= 3:
             for node in self.pool:
                 if node.effect == Effect.PAINTED and node.id not in self.cleanedNodes:
                     newState = LevelState.incState(self, Action(node, ActionType.CLEAN))
                     newState.cleanedNodes.append(node.id)
-                    nextStates.append(newState)
+                    yield newState
         if self.keys[Color.GREEN] >= 5:
             for node in self.pool:
                 if node.effect == Effect.ERODED and node.id not in self.cleanedNodes:
                     newState = LevelState.incState(self, Action(node, ActionType.CLEAN))
                     newState.cleanedNodes.append(node.id)
-                    nextStates.append(newState)
+                    yield newState
         
         # Can nodes be master-opened?
         if self.keys[Color.GOLD] > 0:
@@ -120,7 +119,7 @@ class LevelState:
                 if node.isDoor() and node.color not in [Color.PURE, Color.GOLD]:
                     newState = LevelState.incState(self, Action(node, ActionType.MASTEROPEN))
                     newState.keys[Color.GOLD] -= 1
-                    nextStates.append(newState)
+                    yield newState
         
         # Can nodes be opened?
         # Warning: very hard-coded
@@ -172,7 +171,4 @@ class LevelState:
                     continue
                 newState.keys[nodeColor] = 0
 
-            nextStates.append(newState)
-            
-
-        return nextStates
+            yield newState
