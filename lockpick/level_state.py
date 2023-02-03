@@ -8,6 +8,7 @@ from action import Action, ActionType
 # actions - list of actions taken to get to this state
 # cursedNodes - list of nodes that are cursed
 # openedNodes - list of IDs of nodes that have been opened
+# cleanedNodes - list of IDs of nodes that have been cleaned
 class LevelState:
     level: Level
     keys: "dict[Color, int]"
@@ -41,31 +42,40 @@ class LevelState:
         )
     
     # Returns a new state with the given action applied
+    # Tries to avoid copying lists if possible
     @classmethod
     def incState(cls, oldState: "LevelState", action: Action) -> "LevelState":
         if action.type == ActionType.OPEN or action.type == ActionType.MASTEROPEN:
+            newKeys = oldState.keys.copy()
             newPool = oldState.pool.copy()
             newPool.remove(action.node)
             for neighbor in action.node.neighbors:
                 if neighbor not in newPool and neighbor.id not in oldState.openedNodes:
                     newPool.append(neighbor)
-            return LevelState(
-                oldState.level,
-                oldState.keys.copy(),
-                newPool,
-                oldState.actions + (action,),
-                oldState.cursedNodes.copy(),
-                oldState.openedNodes + [action.node.id],
-                oldState.cleanedNodes.copy()
-            )         
+            newOpenedNodes = oldState.openedNodes + [action.node.id]
+        else:
+            newKeys = oldState.keys
+            newPool = oldState.pool
+            newOpenedNodes = oldState.openedNodes
+
+        if action.type == ActionType.CURSE or action.type == ActionType.BLESS:
+            newCursedNodes = oldState.cursedNodes.copy()
+        else:
+            newCursedNodes = oldState.cursedNodes
+
+        if action.type == ActionType.CLEAN:
+            newCleanedNodes = oldState.cleanedNodes.copy()
+        else:
+            newCleanedNodes = oldState.cleanedNodes
+
         return LevelState(
             oldState.level,
-            oldState.keys.copy(),
-            oldState.pool.copy(),
-            oldState.actions + (action,),
-            oldState.cursedNodes.copy(),
-            oldState.openedNodes.copy(),
-            oldState.cleanedNodes.copy()
+            newKeys,
+            newPool,
+                oldState.actions + (action,),
+            newCursedNodes,
+            newOpenedNodes,
+            newCleanedNodes
         )
     
     def isSolved(self) -> bool:
@@ -119,7 +129,7 @@ class LevelState:
         # Warning: very hard-coded
         for node in self.pool:
             # Can't open nodes with an effect unless they're cleaned
-            if node.effect != Effect.NONE and Action(node, ActionType.CLEAN) not in self.actions:
+            if node.effect != Effect.NONE and node.id not in self.cleanedNodes:
                 continue
             # Can't open spaces
             if node.nodeType == NodeType.SPACE:
