@@ -13,12 +13,12 @@ class LevelState:
     level: Level
     keys: "dict[Color, int]"
     pool: "list[Node]"
-    actions: "tuple[Action]"
+    actions: "list[Action]"
     cursedNodes: "list[Node]"
     openedNodes: "list[str]"
     cleanedNodes: "list[str]"
 
-    def __init__(self, level: Level, keys: "dict[Color, int]", pool: "list[Node]", actions: "tuple[Action]", 
+    def __init__(self, level: Level, keys: "dict[Color, int]", pool: "list[Node]", actions: "list[Action]", 
                 cursedNodes: "list[Node]", openedNodes: "list[str]", cleanedNodes: "list[str]") -> None:
         self.level = level
         self.keys = keys
@@ -35,7 +35,7 @@ class LevelState:
             level,
             {color: 0 for color in range(Color.NUM_COLORS)},
             level.gameObjects[level.startNode].neighbors,
-            (),
+            [],
             [],
             [],
             []
@@ -72,7 +72,7 @@ class LevelState:
             oldState.level,
             newKeys,
             newPool,
-                oldState.actions + (action,),
+            oldState.actions + [action],
             newCursedNodes,
             newOpenedNodes,
             newCleanedNodes
