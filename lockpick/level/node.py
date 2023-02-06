@@ -38,6 +38,7 @@ class Node:
             "K": NodeType.KEY,
             "K-": NodeType.KEY,
             "K=": NodeType.KEYABS,
+            "K=-": NodeType.KEYABS,
             "K!": NodeType.KEYFLIP,
             "D": NodeType.DOOR,
             "D-": NodeType.DOORNEG,
@@ -49,6 +50,7 @@ class Node:
             "K": int(Xamount) if Xamount else 1,
             "K-": int("-" + Xamount) if Xamount else None,
             "K=": int(Xamount) if Xamount else 1,
+            "K=-": int("-" + Xamount) if Xamount else None,
             "K!": None,
             "D": int(Xamount) if Xamount else 1,
             "D-": int("-" + Xamount) if Xamount else None,
@@ -83,7 +85,7 @@ class Node:
     def asInGame(self) -> str:
         if self.nodeType == NodeType.SPACE:
             return "Space"
-        string = {
+        return {
             NodeType.KEY: "",
             NodeType.KEYABS: "Exact ",
             NodeType.KEYFLIP: "Signflip ",
@@ -105,22 +107,21 @@ class Node:
             Color.BROWN: "Brown",
             Color.GOLD: "Master",
             Color.PURE: "Pure"
-        }[self.color] + " "
-        if self.isKey():
-            string += "Key"
-            if self.amount:
-                string += f", Amount: {self.amount}"
-        elif self.isDoor():
-            string += "Door"
-            if self.amount:
-                string += f", Cost: {self.amount}"
-        string += {
+        }[self.color] + " " + {
+            NodeType.KEY: f"Key, Amount: {self.amount}",
+            NodeType.KEYABS: f"Key, Amount: {self.amount}",
+            NodeType.KEYFLIP: "Key",
+            NodeType.DOOR: f"Door, Cost: {self.amount}",
+            NodeType.DOORNEG: f"Door, Cost: {self.amount}",
+            NodeType.DOORBLANK: "Door, Cost: None",
+            NodeType.DOORX: "Door, Cost: [All +]",
+            NodeType.DOORNEGX: "Door, Cost: [All -]"
+        }[self.nodeType] + {
             Effect.NONE: "",
             Effect.FROZEN: " (Frozen!)",
             Effect.PAINTED: " (Painted!)",
             Effect.ERODED: " (Eroded!)"
         }[self.effect]
-        return string
     
     def asCode(self) -> str:
         if self.nodeType == NodeType.SPACE:

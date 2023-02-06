@@ -64,10 +64,10 @@ class Level:
         
         # Add a bunch of apostrophes if ids conflict
         version = 0
-        while id + "'" * version + "0" in self.gameObjects:
+        while id + "'" * version + "-0" in self.gameObjects:
             version += 1
         for i, node in enumerate(nodes):
-            self.addNode(node, id + "'" * version + str(i))
+            self.addNode(node, id + "'" * version + "-" + str(i))
     
     # Add a single node as a neighbor of another node
     def newNeighbor(self, neighborName: str, code: str) -> None:
