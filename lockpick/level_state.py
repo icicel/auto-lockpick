@@ -152,7 +152,7 @@ class LevelState:
             elif node.nodeType == NodeType.DOORNEG:
                 if self.keys[nodeColor] > node.amount:
                     continue
-                newState.keys[nodeColor] += node.amount
+                newState.keys[nodeColor] -= node.amount
 
             elif node.nodeType == NodeType.DOORBLANK:
                 if self.keys[nodeColor] != 0:
