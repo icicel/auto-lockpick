@@ -15,11 +15,11 @@ class LevelState:
     pool: "list[Node]"
     actions: "list[Action]"
     cursedNodes: "list[Node]"
-    openedNodes: "list[str]"
-    cleanedNodes: "list[str]"
+    openedNodes: "list[Node]"
+    cleanedNodes: "list[Node]"
 
     def __init__(self, level: Level, keys: "dict[Color, int]", pool: "list[Node]", actions: "list[Action]", 
-                cursedNodes: "list[Node]", openedNodes: "list[str]", cleanedNodes: "list[str]") -> None:
+                cursedNodes: "list[Node]", openedNodes: "list[Node]", cleanedNodes: "list[Node]") -> None:
         self.level = level
         self.keys = keys
         self.pool = pool
@@ -34,10 +34,10 @@ class LevelState:
         return LevelState(
             level,
             {color: 0 for color in range(Color.NUM_COLORS)},
-            level.gameObjects[level.startNode].neighbors,
+            level.gameObjects[level.startNode.id].neighbors.copy(),
             [],
             [],
-            [],
+            [level.startNode],
             []
         )
     
@@ -50,9 +50,9 @@ class LevelState:
             newPool = oldState.pool.copy()
             newPool.remove(action.node)
             for neighbor in action.node.neighbors:
-                if neighbor not in newPool and neighbor.id not in oldState.openedNodes:
+                if neighbor not in newPool and neighbor not in oldState.openedNodes:
                     newPool.append(neighbor)
-            newOpenedNodes = oldState.openedNodes + [action.node.id]
+            newOpenedNodes = oldState.openedNodes + [action.node]
         else:
             newKeys = oldState.keys
             newPool = oldState.pool
@@ -64,7 +64,7 @@ class LevelState:
             newCursedNodes = oldState.cursedNodes
 
         if action.type == ActionType.CLEAN:
-            newCleanedNodes = oldState.cleanedNodes.copy()
+            newCleanedNodes = oldState.cleanedNodes + [action.node]
         else:
             newCleanedNodes = oldState.cleanedNodes
 
@@ -79,10 +79,7 @@ class LevelState:
         )
     
     def isSolved(self) -> bool:
-        for node in self.pool:
-            if node.id == self.level.endNode:
-                return True
-        return False
+        return self.level.endNode in self.pool
     
     def canClean(self, effect: Effect) -> bool:
         return {
@@ -96,8 +93,7 @@ class LevelState:
         # Can nodes be cursed?
         if self.keys[Color.BROWN] > 0:
             for node in self.pool:
-                if node in self.cursedNodes or node.color in [Color.BROWN, Color.PURE]\
-                or node.isKey() or node.nodeType == NodeType.SPACE:
+                if not node.isDoor() or node in self.cursedNodes or node.color in [Color.BROWN, Color.PURE]:
                     continue
                 newState = LevelState.incState(self, Action(node, ActionType.CURSE))
                 newState.cursedNodes.append(node)
@@ -112,27 +108,24 @@ class LevelState:
 
         # Can nodes be cleaned?
         for node in self.pool:
-            if node.effect != Effect.NONE and self.canClean(node.effect) and node.id not in self.cleanedNodes:
+            if node.effect != Effect.NONE and self.canClean(node.effect) and node not in self.cleanedNodes:
                 newState = LevelState.incState(self, Action(node, ActionType.CLEAN))
-                newState.cleanedNodes.append(node.id)
                 yield newState
         
         # Can nodes be master-opened?
         if self.keys[Color.GOLD] > 0:
             for node in self.pool:
-                if node.isDoor() and node.color not in [Color.PURE, Color.GOLD]:
-                    newState = LevelState.incState(self, Action(node, ActionType.MASTEROPEN))
-                    newState.keys[Color.GOLD] -= 1
-                    yield newState
+                if not node.isDoor() or node.color in [Color.PURE, Color.GOLD]:
+                    continue
+                newState = LevelState.incState(self, Action(node, ActionType.MASTEROPEN))
+                newState.keys[Color.GOLD] -= 1
+                yield newState
         
         # Can nodes be opened?
         # Warning: very hard-coded
         for node in self.pool:
             # Can't open nodes with an effect unless they're cleaned
-            if node.effect != Effect.NONE and node.id not in self.cleanedNodes:
-                continue
-            # Can't open spaces
-            if node.nodeType == NodeType.SPACE:
+            if node.effect != Effect.NONE and node not in self.cleanedNodes:
                 continue
             # Cursed nodes act like brown nodes
             if node in self.cursedNodes:
@@ -149,7 +142,7 @@ class LevelState:
                 newState.keys[nodeColor] = node.amount
                 
             elif node.nodeType == NodeType.KEYFLIP:
-                newState.keys[nodeColor] = -newState.keys[nodeColor]
+                newState.keys[nodeColor] *= -1
 
             elif node.nodeType == NodeType.DOOR:
                 if self.keys[nodeColor] < node.amount:
