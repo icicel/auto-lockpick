@@ -43,39 +43,88 @@ class LevelState:
     
     # Returns a new state with the given action applied
     # Tries to avoid copying lists if possible
-    @classmethod
-    def incState(cls, oldState: "LevelState", action: Action) -> "LevelState":
-        if action.type == ActionType.OPEN or action.type == ActionType.MASTEROPEN:
-            newKeys = oldState.keys.copy()
-            newPool = oldState.pool.copy()
-            newPool.remove(action.node)
+    def incState(self, action: Action, isCursed: bool=False) -> "LevelState":
+
+        if action.type == ActionType.OPEN:
+            keys = self.keys.copy()
+            pool = self.pool.copy()
+            actions = self.actions + [action]
+            openedNodes = self.openedNodes + [action.node]
+            cursedNodes = self.cursedNodes
+            cleanedNodes = self.cleanedNodes
+
+            nodeAmount = action.node.amount
+            nodeType = action.node.nodeType
+            nodeColor = Color.BROWN if isCursed else action.node.color
+
+            if nodeType == NodeType.KEY:
+                keys[nodeColor] += nodeAmount
+            elif nodeType == NodeType.KEYABS:
+                keys[nodeColor] = nodeAmount       
+            elif nodeType == NodeType.KEYFLIP:
+                keys[nodeColor] *= -1
+            elif nodeType == NodeType.DOOR:
+                keys[nodeColor] -= nodeAmount
+            elif nodeType == NodeType.DOORNEG:
+                keys[nodeColor] -= nodeAmount
+            elif nodeType == NodeType.DOORX:
+                keys[nodeColor] = 0
+            elif nodeType == NodeType.DOORNEGX:
+                keys[nodeColor] = 0
+
+            pool.remove(action.node)
             for neighbor in action.node.neighbors:
-                if neighbor not in newPool and neighbor not in oldState.openedNodes:
-                    newPool.append(neighbor)
-            newOpenedNodes = oldState.openedNodes + [action.node]
-        else:
-            newKeys = oldState.keys
-            newPool = oldState.pool
-            newOpenedNodes = oldState.openedNodes
+                if neighbor not in pool and neighbor not in self.openedNodes:
+                    pool.append(neighbor)
+        
+        elif action.type == ActionType.MASTEROPEN:
+            keys = self.keys.copy()
+            pool = self.pool.copy()
+            actions = self.actions + [action]
+            openedNodes = self.openedNodes + [action.node]
+            cursedNodes = self.cursedNodes
+            cleanedNodes = self.cleanedNodes
+            
+            keys[Color.GOLD] -= 1
+            pool.remove(action.node)
+            for neighbor in action.node.neighbors:
+                if neighbor not in pool and neighbor not in self.openedNodes:
+                    pool.append(neighbor)
+        
+        elif action.type == ActionType.CLEAN:
+            keys = self.keys
+            pool = self.pool
+            actions = self.actions + [action]
+            openedNodes = self.openedNodes
+            cursedNodes = self.cursedNodes
+            cleanedNodes = self.cleanedNodes + [action.node]
 
-        if action.type == ActionType.CURSE or action.type == ActionType.BLESS:
-            newCursedNodes = oldState.cursedNodes.copy()
-        else:
-            newCursedNodes = oldState.cursedNodes
+        elif action.type == ActionType.CURSE:
+            keys = self.keys
+            pool = self.pool
+            actions = self.actions + [action]
+            openedNodes = self.openedNodes
+            cursedNodes = self.cursedNodes + [action.node]
+            cleanedNodes = self.cleanedNodes
+        
+        elif action.type == ActionType.BLESS:
+            keys = self.keys
+            pool = self.pool
+            actions = self.actions + [action]
+            openedNodes = self.openedNodes
+            cursedNodes = self.cursedNodes.copy()
+            cleanedNodes = self.cleanedNodes
 
-        if action.type == ActionType.CLEAN:
-            newCleanedNodes = oldState.cleanedNodes + [action.node]
-        else:
-            newCleanedNodes = oldState.cleanedNodes
+            cursedNodes.remove(action.node)
 
         return LevelState(
-            oldState.level,
-            newKeys,
-            newPool,
-            oldState.actions + [action],
-            newCursedNodes,
-            newOpenedNodes,
-            newCleanedNodes
+            self.level,
+            keys,
+            pool,
+            actions,
+            cursedNodes,
+            openedNodes,
+            cleanedNodes
         )
     
     def isSolved(self) -> bool:
@@ -95,31 +144,25 @@ class LevelState:
             for node in self.pool:
                 if not node.isDoor() or node in self.cursedNodes or node.color in [Color.BROWN, Color.PURE]:
                     continue
-                newState = LevelState.incState(self, Action(node, ActionType.CURSE))
-                newState.cursedNodes.append(node)
-                yield newState
+                yield self.incState(Action(node, ActionType.CURSE))
         
         # Can nodes be blessed?
         if self.keys[Color.BROWN] < 0:
             for node in self.cursedNodes:
-                newState = LevelState.incState(self, Action(node, ActionType.BLESS))
-                newState.cursedNodes.remove(node)
-                yield newState
+                yield self.incState(Action(node, ActionType.BLESS))
 
         # Can nodes be cleaned?
         for node in self.pool:
-            if node.effect != Effect.NONE and self.canClean(node.effect) and node not in self.cleanedNodes:
-                newState = LevelState.incState(self, Action(node, ActionType.CLEAN))
-                yield newState
+            if node.effect == Effect.NONE or not self.canClean(node.effect) or node in self.cleanedNodes:
+                continue
+            yield self.incState(Action(node, ActionType.CLEAN))
         
         # Can nodes be master-opened?
         if self.keys[Color.GOLD] > 0:
             for node in self.pool:
                 if not node.isDoor() or node.color in [Color.PURE, Color.GOLD]:
                     continue
-                newState = LevelState.incState(self, Action(node, ActionType.MASTEROPEN))
-                newState.keys[Color.GOLD] -= 1
-                yield newState
+                yield self.incState(Action(node, ActionType.MASTEROPEN))
         
         # Can nodes be opened?
         # Warning: very hard-coded
@@ -128,44 +171,18 @@ class LevelState:
             if node.effect != Effect.NONE and node not in self.cleanedNodes:
                 continue
             # Cursed nodes act like brown nodes
-            if node in self.cursedNodes:
-                nodeColor = Color.BROWN
-            else:
-                nodeColor = node.color
+            isCursed = node in self.cursedNodes
+            nodeColor = Color.BROWN if isCursed else node.color
+            
+            if node.nodeType == NodeType.DOOR and self.keys[nodeColor] < node.amount:
+                continue
+            if node.nodeType == NodeType.DOORNEG and self.keys[nodeColor] > node.amount:
+                continue
+            if node.nodeType == NodeType.DOORBLANK and self.keys[nodeColor] != 0:
+                continue
+            if node.nodeType == NodeType.DOORX and self.keys[nodeColor] < 1:
+                continue
+            if node.nodeType == NodeType.DOORNEGX and self.keys[nodeColor] > -1:
+                continue
 
-            newState = LevelState.incState(self, Action(node, ActionType.OPEN))
-
-            if node.nodeType == NodeType.KEY:
-                newState.keys[nodeColor] += node.amount
-
-            elif node.nodeType == NodeType.KEYABS:
-                newState.keys[nodeColor] = node.amount
-                
-            elif node.nodeType == NodeType.KEYFLIP:
-                newState.keys[nodeColor] *= -1
-
-            elif node.nodeType == NodeType.DOOR:
-                if self.keys[nodeColor] < node.amount:
-                    continue
-                newState.keys[nodeColor] -= node.amount
-
-            elif node.nodeType == NodeType.DOORNEG:
-                if self.keys[nodeColor] > node.amount:
-                    continue
-                newState.keys[nodeColor] -= node.amount
-
-            elif node.nodeType == NodeType.DOORBLANK:
-                if self.keys[nodeColor] != 0:
-                    continue
-
-            elif node.nodeType == NodeType.DOORX:
-                if self.keys[nodeColor] <= 0:
-                    continue
-                newState.keys[nodeColor] = 0
-
-            elif node.nodeType == NodeType.DOORNEGX:
-                if self.keys[nodeColor] >= 0:
-                    continue
-                newState.keys[nodeColor] = 0
-
-            yield newState
+            yield self.incState(Action(node, ActionType.OPEN), isCursed=isCursed)
